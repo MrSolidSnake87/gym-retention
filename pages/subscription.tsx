@@ -157,10 +157,10 @@ export default function Subscription() {
                       If you have more than 2,000 members or need custom features, our Enterprise plan offers unlimited members and dedicated support.
                     </p>
                     <a
-                      href="mailto:sales@gymretention.com?subject=Enterprise%20Upgrade%20Inquiry&body=Hi,%0A%0AI'm%20interested%20in%20upgrading%20to%20the%20Enterprise%20plan.%0AGym%20Name:%0AMember%20Count:%0A%0AThanks"
+                      href="mailto:support@gymretention.com?subject=Enterprise%20Upgrade%20Inquiry&body=Hi,%0A%0AI'm%20interested%20in%20upgrading%20to%20the%20Enterprise%20plan.%0AGym%20Name:%0AMember%20Count:%0A%0AThanks"
                       className="text-blue-600 hover:text-blue-700 font-semibold"
                     >
-                      Contact Sales
+                      Contact Us
                     </a>
                   </div>
                 )}

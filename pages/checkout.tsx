@@ -265,7 +265,7 @@ export default function Checkout() {
                       const formData = new FormData(e.currentTarget);
                       const subject = `Enterprise Inquiry - ${formData.get('gym_name')}`;
                       const body = `Name: ${formData.get('contact_name')}%0AEmail: ${formData.get('email')}%0AGym Name: ${formData.get('gym_name')}%0AMember Count: ${formData.get('member_count')}%0A%0AMessage:%0A${formData.get('message')}`;
-                      window.location.href = `mailto:sales@gymretention.com?subject=${encodeURIComponent(subject)}&body=${body}`;
+                      window.location.href = `mailto:support@gymretention.com?subject=${encodeURIComponent(subject)}&body=${body}`;
                     }}
                     className="space-y-4"
                   >

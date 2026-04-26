@@ -6,6 +6,7 @@ type ResponseData = {
   token?: string;
   session?: any;
   error?: string;
+  unverified?: boolean;
 };
 
 export default async function handler(

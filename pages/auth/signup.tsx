@@ -37,8 +37,8 @@ export default function SignupPage() {
         throw new Error(data.error || 'Signup failed');
       }
 
-      // Successful signup — use full navigation so the cookie is applied before the request
-      window.location.href = '/dashboard';
+      // Successful signup — redirect to checkout
+      window.location.href = '/checkout';
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {

@@ -54,7 +54,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       });
     }
 
-    // Server-side subscription gate
+    // Server-side subscription gate + tier check (single DB call)
     const subscription = await getSubscriptionByGymId(gymId);
     const subscriptionStatus = subscription?.status || 'trial';
     if (subscriptionStatus !== 'active') {
@@ -67,7 +67,6 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       return res.status(404).json({ error: 'Gym not found' });
     }
 
-    const subscription = await getSubscriptionByGymId(gymId);
     const tier = subscription?.tier || 'starter';
     const pricingTiers = getPricingTiers();
     const tierConfig = pricingTiers[tier as keyof typeof pricingTiers];

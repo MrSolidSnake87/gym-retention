@@ -1,5 +1,5 @@
 import type { NextApiResponse } from 'next';
-import { getMembersByGymId } from '@/lib/db-postgres';
+import { getMembersByGymId, getSubscriptionByGymId } from '@/lib/db-postgres';
 import { analyzeAllMembers, getAtRiskMembers, getOnboardingCohorts } from '@/lib/analyzer';
 import { withAuth, AuthenticatedRequest } from '@/lib/auth-middleware';
 
@@ -10,6 +10,13 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
 
   try {
     const gymId = req.gym_id!;
+
+    // Server-side subscription gate — block data access for non-active subscriptions
+    const subscription = await getSubscriptionByGymId(gymId);
+    const subscriptionStatus = subscription?.status || 'trial';
+    if (subscriptionStatus !== 'active') {
+      return res.status(403).json({ error: 'Active subscription required', subscription_status: subscriptionStatus });
+    }
 
     // Fetch only this gym's members
     const rawMembers = await getMembersByGymId(gymId);

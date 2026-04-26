@@ -12,6 +12,7 @@ const PRICING = [
     id: 'starter',
     name: 'Starter',
     price: 39,
+    currency: '£',
     members: '< 500',
     features: [
       'Up to 500 members',
@@ -24,6 +25,7 @@ const PRICING = [
     id: 'pro',
     name: 'Pro',
     price: 79,
+    currency: '£',
     members: '< 2,000',
     features: [
       'Up to 2,000 members',
@@ -129,10 +131,13 @@ export default function Checkout() {
               <h1 className="text-2xl font-bold text-gray-900">Gym Retention</h1>
             </div>
             <button
-              onClick={() => (window.location.href = '/dashboard')}
+              onClick={async () => {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/auth/login';
+              }}
               className="text-sm text-gray-600 hover:text-gray-900"
             >
-              Back to Dashboard
+              Sign Out
             </button>
           </div>
         </header>
@@ -181,7 +186,7 @@ export default function Checkout() {
                   </p>
 
                   <div className="mb-6">
-                    <span className="text-5xl font-bold">${plan.price}</span>
+                    <span className="text-5xl font-bold">{plan.currency}{plan.price}</span>
                     <span className={`text-sm ${plan.popular ? 'text-blue-100' : 'text-gray-600'}`}>
                       /month
                     </span>

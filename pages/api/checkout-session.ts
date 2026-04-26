@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import stripe, { getPricingTiers } from '@/lib/stripe';
+import { getStripeClient, getPricingTiers } from '@/lib/stripe';
 import { verifyToken } from '@/lib/jwt';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -31,6 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Create Stripe checkout session
+    const stripe = getStripeClient();
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',

@@ -1,24 +1,25 @@
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-04-10',
-});
-
-export default stripe;
+// Returns a fresh Stripe client reading the key at call time (never at module load)
+export function getStripeClient(): Stripe {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+  return new Stripe(key, { apiVersion: '2024-04-10' });
+}
 
 // Pricing tiers - read at runtime to get environment variables
 export function getPricingTiers() {
   return {
     starter: {
       name: 'Starter',
-      price: 3900, // $39.00 in cents
+      price: 3900, // £39.00 in pence
       members: 500,
       stripePriceId: process.env.STRIPE_STARTER_PRICE_ID || '',
       description: 'Up to 500 members',
     },
     pro: {
       name: 'Pro',
-      price: 7900, // $79.00 in cents
+      price: 7900, // £79.00 in pence
       members: 2000,
       stripePriceId: process.env.STRIPE_PRO_PRICE_ID || '',
       description: 'Up to 2,000 members',

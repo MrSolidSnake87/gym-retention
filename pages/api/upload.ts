@@ -54,6 +54,13 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       });
     }
 
+    // Server-side subscription gate
+    const subscription = await getSubscriptionByGymId(gymId);
+    const subscriptionStatus = subscription?.status || 'trial';
+    if (subscriptionStatus !== 'active') {
+      return res.status(403).json({ error: 'Active subscription required' });
+    }
+
     // Check member count against tier limit
     const gym = await getGymById(gymId);
     if (!gym) {

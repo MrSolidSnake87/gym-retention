@@ -35,6 +35,12 @@ export default async function handler(
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Login failed';
+    if (errorMessage === 'EMAIL_NOT_VERIFIED') {
+      return res.status(403).json({
+        error: 'Please verify your email before logging in.',
+        unverified: true,
+      });
+    }
     return res.status(401).json({ error: errorMessage });
   }
 }

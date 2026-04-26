@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import { createToken, verifyToken } from './jwt';
-import { getUserByEmail, getUserById, getGymById, getGymByEmail, createGymUser, createGym, getSubscriptionByGymId } from './db-postgres';
+import { getUserByEmail, getUserById, getGymById, getGymByEmail, createGymUser, createGym, getSubscriptionByGymId, db } from './db-postgres';
 
 export { createToken, verifyToken };
 
@@ -25,16 +26,24 @@ export async function registerGym(
   gymName: string,
   gymEmail: string,
   password: string
-): Promise<{ gym_id: string; user_id: string; token: string }> {
+): Promise<{ gym_id: string; user_id: string; verificationToken: string }> {
   const existingGym = await getGymByEmail(gymEmail);
   if (existingGym) throw new Error('Gym email already registered');
 
   const gym = await createGym(gymName, gymEmail);
   const passwordHash = await hashPassword(password);
   const user = await createGymUser(gym.id, gymEmail, passwordHash, 'admin');
-  const token = await createToken(gym.id, user.id, user.email);
 
-  return { gym_id: gym.id, user_id: user.id, token };
+  // Generate email verification token
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+  await db.query(
+    `UPDATE gym_users SET verification_token = $1, verification_token_expires = $2, email_verified = FALSE WHERE id = $3`,
+    [verificationToken, expires, user.id]
+  );
+
+  return { gym_id: gym.id, user_id: user.id, verificationToken };
 }
 
 export async function loginGym(
@@ -46,6 +55,13 @@ export async function loginGym(
 
   const passwordValid = await verifyPassword(password, user.password_hash);
   if (!passwordValid) throw new Error('Invalid email or password');
+
+  // Check email verification
+  const userRecord = await db.query('SELECT email_verified FROM gym_users WHERE id = $1', [user.id]);
+  const emailVerified = userRecord.rows[0]?.email_verified;
+  if (emailVerified === false) {
+    throw new Error('EMAIL_NOT_VERIFIED');
+  }
 
   const gym = await getGymById(user.gym_id);
   if (!gym || gym.status === 'cancelled') throw new Error('Gym account is not active');

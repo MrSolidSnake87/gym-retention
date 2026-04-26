@@ -1,11 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { registerGym } from '@/lib/auth';
+import { sendVerificationEmail } from '@/lib/email';
 
 type ResponseData = {
   success?: boolean;
-  token?: string;
-  gym_id?: string;
-  user_id?: string;
   error?: string;
 };
 
@@ -20,7 +18,6 @@ export default async function handler(
   try {
     const { gymName, email, password, confirmPassword } = req.body;
 
-    // Validation
     if (!gymName || !email || !password || !confirmPassword) {
       return res.status(400).json({ error: 'All fields are required' });
     }
@@ -33,22 +30,17 @@ export default async function handler(
       return res.status(400).json({ error: 'Password must be at least 8 characters' });
     }
 
-    if (!email.includes('@')) {
+    if (!email.includes('@') || !email.includes('.')) {
       return res.status(400).json({ error: 'Invalid email address' });
     }
 
-    // Register gym
-    const { gym_id, user_id, token } = await registerGym(gymName, email, password);
+    // Register gym — returns verification token, NOT an auth token
+    const { verificationToken } = await registerGym(gymName, email, password);
 
-    // Set auth token as HTTP-only cookie
-    res.setHeader('Set-Cookie', `auth_token=${token}; Path=/; Max-Age=2592000; HttpOnly; SameSite=Strict`);
+    // Send verification email
+    await sendVerificationEmail(email, gymName, verificationToken);
 
-    return res.status(201).json({
-      success: true,
-      token,
-      gym_id,
-      user_id,
-    });
+    return res.status(201).json({ success: true });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Signup failed';
     return res.status(400).json({ error: errorMessage });

@@ -36,6 +36,20 @@ const PRICING = [
   },
 ];
 
+const ENTERPRISE = {
+  id: 'enterprise',
+  name: 'Enterprise',
+  members: '2,000+',
+  features: [
+    'Unlimited members',
+    'All Pro features',
+    'Dedicated support',
+    'Custom integrations',
+    'SLA guarantee',
+    'Advanced reporting',
+  ],
+};
+
 export default function Checkout() {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -146,7 +160,7 @@ export default function Checkout() {
           )}
 
           {/* Pricing Cards */}
-          <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto mb-12">
+          <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto mb-16">
             {PRICING.map((plan) => (
               <div
                 key={plan.id}
@@ -210,6 +224,103 @@ export default function Checkout() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Enterprise Section */}
+          <div className="max-w-4xl mx-auto mb-16">
+            <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-lg p-12 text-white">
+              <div className="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                  <h3 className="text-3xl font-bold mb-4">{ENTERPRISE.name}</h3>
+                  <p className="text-slate-300 text-lg mb-6">
+                    For gyms with <strong>2,000+ members</strong> or custom requirements
+                  </p>
+                  <ul className="space-y-3 mb-8">
+                    {ENTERPRISE.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start">
+                        <svg className="h-5 w-5 mr-3 flex-shrink-0 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-slate-400 text-sm">Custom pricing based on your needs</p>
+                </div>
+                <div className="bg-white bg-opacity-5 rounded-lg p-8 backdrop-blur">
+                  <h4 className="text-xl font-bold mb-4">Get a Custom Quote</h4>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.currentTarget);
+                      const subject = `Enterprise Inquiry - ${formData.get('gym_name')}`;
+                      const body = `Name: ${formData.get('contact_name')}%0AEmail: ${formData.get('email')}%0AGym Name: ${formData.get('gym_name')}%0AMember Count: ${formData.get('member_count')}%0A%0AMessage:%0A${formData.get('message')}`;
+                      window.location.href = `mailto:sales@gymretention.com?subject=${encodeURIComponent(subject)}&body=${body}`;
+                    }}
+                    className="space-y-4"
+                  >
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Gym Name</label>
+                      <input
+                        type="text"
+                        name="gym_name"
+                        required
+                        placeholder="Your gym name"
+                        className="w-full px-3 py-2 bg-white bg-opacity-10 border border-slate-600 rounded text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Contact Name</label>
+                      <input
+                        type="text"
+                        name="contact_name"
+                        required
+                        placeholder="Your name"
+                        className="w-full px-3 py-2 bg-white bg-opacity-10 border border-slate-600 rounded text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Email</label>
+                      <input
+                        type="email"
+                        name="email"
+                        required
+                        placeholder="your@email.com"
+                        className="w-full px-3 py-2 bg-white bg-opacity-10 border border-slate-600 rounded text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Member Count</label>
+                      <input
+                        type="number"
+                        name="member_count"
+                        required
+                        placeholder="e.g., 3500"
+                        className="w-full px-3 py-2 bg-white bg-opacity-10 border border-slate-600 rounded text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Message (Optional)</label>
+                      <textarea
+                        name="message"
+                        placeholder="Tell us about your needs..."
+                        rows={3}
+                        className="w-full px-3 py-2 bg-white bg-opacity-10 border border-slate-600 rounded text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition"
+                    >
+                      Request Quote
+                    </button>
+                  </form>
+                  <p className="text-xs text-slate-400 mt-4 text-center">
+                    We'll get back to you within 24 hours
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* FAQ */}

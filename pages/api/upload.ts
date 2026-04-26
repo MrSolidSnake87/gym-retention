@@ -6,7 +6,10 @@ import {
   createMembers,
   updateGym,
   getMemberCountByGymId,
+  getGymById,
+  getSubscriptionByGymId,
 } from '@/lib/db-postgres';
+import { getPricingTiers } from '@/lib/stripe';
 import { withAuth, AuthenticatedRequest } from '@/lib/auth-middleware';
 
 export const config = {
@@ -48,6 +51,31 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       return res.status(400).json({
         error: 'No valid members found in file',
         hint: 'Make sure your file contains columns: name, join_date, last_activity. Dates should be in YYYY-MM-DD format.',
+      });
+    }
+
+    // Check member count against tier limit
+    const gym = await getGymById(gymId);
+    if (!gym) {
+      return res.status(404).json({ error: 'Gym not found' });
+    }
+
+    const subscription = await getSubscriptionByGymId(gymId);
+    const tier = subscription?.tier || 'starter';
+    const pricingTiers = getPricingTiers();
+    const tierConfig = pricingTiers[tier as keyof typeof pricingTiers];
+    const memberLimit = tierConfig.members;
+
+    if (memberLimit !== Infinity && members.length > memberLimit) {
+      return res.status(400).json({
+        error: 'Member count exceeds tier limit',
+        currentTier: tier,
+        tierLimit: memberLimit,
+        uploadedMembers: members.length,
+        message: `Your ${tier} plan supports up to ${memberLimit} members. You're trying to upload ${members.length} members.`,
+        suggestion: tier === 'pro'
+          ? 'Contact us for Enterprise pricing to support unlimited members.'
+          : `Upgrade to the ${tier === 'starter' ? 'Pro' : 'Enterprise'} plan to support more members.`,
       });
     }
 

@@ -381,11 +381,16 @@ function extractGymSystemMember(row: any): Member | null {
   const name = `${firstName} ${surname}`.trim();
 
   const joinDate = (row[joinDateKey] || '').trim();
-  const lastActivity = (row[lastVisitKey] || '').trim();
+  let lastActivity = (row[lastVisitKey] || '').trim();
   let status = (row[statusKey] || 'active').trim();
 
-  if (!name || !joinDate || !lastActivity) {
+  if (!name || !joinDate) {
     return null;
+  }
+
+  // If last_activity is missing, use join_date (member hasn't been active yet)
+  if (!lastActivity) {
+    lastActivity = joinDate;
   }
 
   // Map status values to standard ones

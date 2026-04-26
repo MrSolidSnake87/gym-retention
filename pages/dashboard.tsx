@@ -52,116 +52,7 @@ export default function Dashboard() {
   const [uploadedCount, setUploadedCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Verify session on mount
-  useEffect(() => {
-    fetch('/api/auth/verify')
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data.authenticated) {
-          window.location.href = '/auth/login';
-        } else {
-          setSession(data.session);
-          setAuthLoading(false);
-        }
-      })
-      .catch(() => {
-        window.location.href = '/auth/login';
-      });
-  }, []);
-
-  // Show loading while auth is verifying
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show paywall if subscription not active
-  if (!authLoading && session && session.subscription_status !== 'active') {
-    return (
-      <>
-        <Head>
-          <title>Gym Retention - Dashboard</title>
-        </Head>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-          {/* Header */}
-          <header className="bg-white border-b border-gray-200 shadow-sm">
-            <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Gym Retention</h1>
-              </div>
-              <button
-                onClick={() => (window.location.href = '/subscription')}
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Subscription
-              </button>
-            </div>
-          </header>
-
-          {/* Paywall */}
-          <div className="max-w-2xl mx-auto px-6 py-16">
-            <div className="bg-white rounded-lg shadow-lg p-12 text-center">
-              <div className="mb-6">
-                <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                {session.subscription_status === 'trial'
-                  ? 'Choose Your Plan'
-                  : 'Subscription Expired'}
-              </h2>
-              <p className="text-lg text-gray-600 mb-8">
-                {session.subscription_status === 'trial'
-                  ? 'Select a pricing plan to unlock the full power of Gym Retention and start tracking at-risk members.'
-                  : 'Your subscription has expired. Please renew to continue using Gym Retention.'}
-              </p>
-              <button
-                onClick={() => (window.location.href = '/checkout')}
-                className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition mb-4 inline-block"
-              >
-                View Pricing Plans
-              </button>
-              <p className="text-sm text-gray-500 mt-6">
-                Already have a subscription? <a href="/subscription" className="text-blue-600 hover:text-blue-700 font-semibold">View your subscription</a>
-              </p>
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  // Fetch dashboard data after auth confirmed
-  useEffect(() => {
-    if (!authLoading && session) {
-      fetchData();
-    }
-  }, [authLoading, session]);
-
-  useEffect(() => {
-    if (selectedMember) {
-      fetchScript(selectedMember.id);
-    }
-  }, [selectedMember]);
-
-  // Show loading while data is fetching
-  if (loading || !data) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  // ── Functions declared before hooks so hooks can reference them ──
 
   const fetchData = async () => {
     try {
@@ -278,6 +169,41 @@ export default function Dashboard() {
     window.location.href = '/auth/login';
   };
 
+  // ── All hooks together — no conditional returns above these ──
+
+  // Hook 1: Verify session on mount
+  useEffect(() => {
+    fetch('/api/auth/verify')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.authenticated) {
+          window.location.href = '/auth/login';
+        } else {
+          setSession(data.session);
+          setAuthLoading(false);
+        }
+      })
+      .catch(() => {
+        window.location.href = '/auth/login';
+      });
+  }, []);
+
+  // Hook 2: Fetch dashboard data after auth confirmed
+  useEffect(() => {
+    if (!authLoading && session && session.subscription_status === 'active') {
+      fetchData();
+    }
+  }, [authLoading, session]);
+
+  // Hook 3: Fetch script when member selected
+  useEffect(() => {
+    if (selectedMember) {
+      fetchScript(selectedMember.id);
+    }
+  }, [selectedMember]);
+
+  // ── Conditional renders after all hooks ──
+
   // Auth loading state
   if (authLoading) {
     return (
@@ -287,6 +213,57 @@ export default function Dashboard() {
           <p className="text-gray-600">Verifying session...</p>
         </div>
       </div>
+    );
+  }
+
+  // Paywall: subscription not active
+  if (session && session.subscription_status !== 'active') {
+    return (
+      <>
+        <Head>
+          <title>Gym Retention - Dashboard</title>
+        </Head>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+          <header className="bg-white border-b border-gray-200 shadow-sm">
+            <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+              <h1 className="text-2xl font-bold text-gray-900">Gym Retention</h1>
+              <button
+                onClick={() => (window.location.href = '/subscription')}
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                Subscription
+              </button>
+            </div>
+          </header>
+          <div className="max-w-2xl mx-auto px-6 py-16">
+            <div className="bg-white rounded-lg shadow-lg p-12 text-center">
+              <div className="mb-6">
+                <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                {session.subscription_status === 'trial' ? 'Choose Your Plan' : 'Subscription Expired'}
+              </h2>
+              <p className="text-lg text-gray-600 mb-8">
+                {session.subscription_status === 'trial'
+                  ? 'Select a pricing plan to unlock the full power of Gym Retention and start tracking at-risk members.'
+                  : 'Your subscription has expired. Please renew to continue using Gym Retention.'}
+              </p>
+              <button
+                onClick={() => (window.location.href = '/checkout')}
+                className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+              >
+                View Pricing Plans
+              </button>
+              <p className="text-sm text-gray-500 mt-6">
+                Already subscribed?{' '}
+                <a href="/subscription" className="text-blue-600 hover:text-blue-700 font-semibold">View your subscription</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 

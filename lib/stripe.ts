@@ -12,14 +12,14 @@ export function getPricingTiers() {
   return {
     starter: {
       name: 'Starter',
-      price: 3900, // £39.00 in pence
+      price: 3995, // £39.95 in pence
       members: 500,
       stripePriceId: process.env.STRIPE_STARTER_PRICE_ID || '',
       description: 'Up to 500 members',
     },
     pro: {
       name: 'Pro',
-      price: 7900, // £79.00 in pence
+      price: 8995, // £89.95 in pence
       members: 2000,
       stripePriceId: process.env.STRIPE_PRO_PRICE_ID || '',
       description: 'Up to 2,000 members',

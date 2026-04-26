@@ -11,7 +11,7 @@ const PRICING = [
   {
     id: 'starter',
     name: 'Starter',
-    price: 39,
+    price: 39.95,
     currency: '£',
     members: '< 500',
     features: [
@@ -24,7 +24,7 @@ const PRICING = [
   {
     id: 'pro',
     name: 'Pro',
-    price: 79,
+    price: 89.95,
     currency: '£',
     members: '< 2,000',
     features: [
@@ -186,7 +186,7 @@ export default function Checkout() {
                   </p>
 
                   <div className="mb-6">
-                    <span className="text-5xl font-bold">{plan.currency}{plan.price}</span>
+                    <span className="text-5xl font-bold">{plan.currency}{plan.price.toFixed(2)}</span>
                     <span className={`text-sm ${plan.popular ? 'text-blue-100' : 'text-gray-600'}`}>
                       /month
                     </span>

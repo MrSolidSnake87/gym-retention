@@ -16,15 +16,41 @@ export interface RawMember {
 export async function parseCSV(buffer: Buffer): Promise<Member[]> {
   return new Promise((resolve, reject) => {
     const members: Member[] = [];
+    const rows: any[] = [];
     const stream = Readable.from([buffer]);
 
     stream
       .pipe(csv())
-      .on('data', (row: RawMember) => {
-        const member = extractMemberData(row);
-        if (member) members.push(member);
+      .on('data', (row: any) => {
+        rows.push(row);
       })
-      .on('end', () => resolve(members))
+      .on('end', () => {
+        // First try to detect gym system format
+        if (rows.length > 0) {
+          const firstRow = rows[0];
+          const keys = Object.keys(firstRow).map(k => k.toLowerCase());
+
+          // Check if this looks like a gym management system (AnytimeFitness, ClubWise, etc.)
+          if ((keys.some(k => k.includes('first name') || k.includes('firstname')) &&
+               keys.some(k => k.includes('surname'))) ||
+              (keys.includes('joining date') && keys.includes('last visit'))) {
+            // Parse as gym system format
+            for (const row of rows) {
+              const member = extractGymSystemMember(row);
+              if (member) members.push(member);
+            }
+            resolve(members);
+            return;
+          }
+        }
+
+        // Fall back to standard format
+        for (const row of rows) {
+          const member = extractMemberData(row);
+          if (member) members.push(member);
+        }
+        resolve(members);
+      })
       .on('error', reject);
   });
 }
@@ -326,6 +352,69 @@ function tryFreeFormFormat(lines: string[]): Member[] {
   }
 
   return members;
+}
+
+function extractGymSystemMember(row: any): Member | null {
+  // Handle gym management system exports (AnytimeFitness, ClubWise, PingPoint, etc.)
+  // These typically have columns like: First name, Surname, Joining Date, Last visit, Status, Email address, Mobile number
+
+  // Combine first and last name
+  const findKey = (row: any, patterns: string[]): string => {
+    const keys = Object.keys(row);
+    for (const pattern of patterns) {
+      const match = keys.find(k => k.toLowerCase().includes(pattern.toLowerCase()));
+      if (match) return match;
+    }
+    return '';
+  };
+
+  const firstNameKey = findKey(row, ['first name', 'firstname', 'forename']);
+  const surnameKey = findKey(row, ['surname', 'last name', 'lastname', 'family name']);
+  const joinDateKey = findKey(row, ['joining date', 'join date', 'joined date', 'membership start']);
+  const lastVisitKey = findKey(row, ['last visit', 'last activity', 'last attendance']);
+  const statusKey = findKey(row, ['status', 'membership status', 'account status']);
+  const emailKey = findKey(row, ['email', 'email address', 'e-mail']);
+  const phoneKey = findKey(row, ['mobile', 'phone', 'mobile number', 'telephone']);
+
+  const firstName = (row[firstNameKey] || '').trim();
+  const surname = (row[surnameKey] || '').trim();
+  const name = `${firstName} ${surname}`.trim();
+
+  const joinDate = (row[joinDateKey] || '').trim();
+  const lastActivity = (row[lastVisitKey] || '').trim();
+  let status = (row[statusKey] || 'active').trim();
+
+  if (!name || !joinDate || !lastActivity) {
+    return null;
+  }
+
+  // Map status values to standard ones
+  const statusMap: { [key: string]: string } = {
+    'active': 'active',
+    'not setup': 'pending',
+    'account onhold': 'suspended',
+    'frozen': 'suspended',
+    'cancelled': 'cancelled',
+    'on hold': 'suspended',
+    'paused': 'suspended',
+    'inactive': 'inactive',
+  };
+
+  status = statusMap[status.toLowerCase()] || 'active';
+
+  // Validate dates
+  if (!isValidDate(joinDate) || !isValidDate(lastActivity)) {
+    return null;
+  }
+
+  return {
+    name,
+    join_date: formatDate(joinDate),
+    payment_status: status,
+    last_activity: formatDate(lastActivity),
+    email: (row[emailKey] || '').trim() || undefined,
+    phone: (row[phoneKey] || '').trim() || undefined,
+  };
 }
 
 function extractMemberData(row: RawMember): Member | null {

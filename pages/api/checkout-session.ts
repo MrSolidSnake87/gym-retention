@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import stripe, { PRICING_TIERS } from '@/lib/stripe';
+import stripe, { getPricingTiers } from '@/lib/stripe';
 import { verifyToken } from '@/lib/jwt';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -19,6 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const { tier } = req.body;
+    const PRICING_TIERS = getPricingTiers();
 
     if (!tier || !PRICING_TIERS[tier as keyof typeof PRICING_TIERS]) {
       return res.status(400).json({ error: 'Invalid tier' });

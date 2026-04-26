@@ -1,0 +1,13 @@
+name,join_date,payment_status,last_activity,email,phone
+John Smith,2026-03-01,active,2026-04-20,john@example.com,555-0101
+Sarah Johnson,2026-02-15,active,2026-04-18,sarah@example.com,555-0102
+Michael Brown,2026-01-10,active,2026-04-08,michael@example.com,555-0103
+Emma Davis,2026-04-10,active,2026-04-19,emma@example.com,555-0104
+James Wilson,2026-03-20,active,2026-04-01,james@example.com,555-0105
+Lisa Anderson,2026-02-01,active,2026-04-15,lisa@example.com,555-0106
+David Miller,2026-01-05,active,2026-03-20,david@example.com,555-0107
+Jessica Garcia,2026-04-15,active,2026-04-19,jessica@example.com,555-0108
+Robert Taylor,2026-02-20,active,2026-03-25,robert@example.com,555-0109
+Jennifer Martinez,2026-03-10,active,2026-04-05,jennifer@example.com,555-0110
+Chris Lee,2025-12-01,active,2026-03-15,chris@example.com,555-0111
+Amanda White,2026-04-01,active,2026-04-21,amanda@example.com,555-0112

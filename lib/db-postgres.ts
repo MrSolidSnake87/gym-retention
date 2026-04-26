@@ -2,9 +2,13 @@ import { Pool, QueryResult } from 'pg';
 import * as crypto from 'crypto';
 import { Member } from './db';
 
-const pool = new Pool({
+export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
+
+export const db = {
+  query: (text: string, params?: any[]) => pool.query(text, params),
+};
 
 export interface Gym {
   id: string;

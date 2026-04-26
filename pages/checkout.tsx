@@ -72,6 +72,26 @@ export default function Checkout() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Reset processing state when user navigates back from Stripe
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (!document.hidden) {
+        setProcessing(false);
+        setSelectedTier(null);
+      }
+    };
+    const handlePageShow = () => {
+      setProcessing(false);
+      setSelectedTier(null);
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pageshow', handlePageShow);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, []);
+
   const handleCheckout = async (tier: string) => {
     setProcessing(true);
     setError(null);

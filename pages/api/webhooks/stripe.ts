@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Readable } from 'stream';
-import stripe from '@/lib/stripe';
+import { getStripeClient } from '@/lib/stripe';
 import { db } from '@/lib/db-postgres';
 
 async function getRawBody(readable: Readable): Promise<Buffer> {
@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const buf = await getRawBody(req);
-    const event = stripe.webhooks.constructEvent(buf, sig as string, webhookSecret);
+    const event = getStripeClient().webhooks.constructEvent(buf, sig as string, webhookSecret);
 
     switch (event.type) {
       case 'checkout.session.completed': {

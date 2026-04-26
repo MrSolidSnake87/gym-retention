@@ -83,7 +83,7 @@ export default function Checkout() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to create checkout session');
+        throw new Error(data.detail || data.error || 'Failed to create checkout session');
       }
 
       const { sessionId } = await response.json();

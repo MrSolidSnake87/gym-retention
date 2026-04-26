@@ -52,6 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json({ sessionId: session.id });
   } catch (error) {
     console.error('Checkout session error:', error);
-    res.status(500).json({ error: 'Failed to create checkout session' });
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(500).json({ error: 'Failed to create checkout session', detail: message });
   }
 }
